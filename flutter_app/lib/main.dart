@@ -32,6 +32,9 @@ class CSBuilderApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: provider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            builder: (context, child) {
+              return _MobileWrapper(child: child!);
+            },
             home: provider.profileCompleted
                 ? const DashboardScreen()
                 : const LandingScreen(),
@@ -46,6 +49,45 @@ class CSBuilderApp extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _MobileWrapper extends StatelessWidget {
+  final Widget child;
+  const _MobileWrapper({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const maxWidth = 480.0;
+
+    if (screenWidth <= maxWidth) {
+      return child;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      color: isDark ? const Color(0xFF0A0A0A) : const Color(0xFFF1F5F9),
+      child: Center(
+        child: Container(
+          width: maxWidth,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 32,
+                spreadRadius: 0,
+                offset: const Offset(0, 0),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: child,
+        ),
       ),
     );
   }

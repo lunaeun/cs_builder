@@ -177,35 +177,35 @@ class DocumentGeneratorService {
     return QAEvaluationSheet(
       title: '$brand 고객센터 QA 평가 시트',
       criteria: [
-        QACriteria(name: '인사/마무리', description: 'Greeting & Closing', scoreGuide: [
+        QACriteria(name: '인사/마무리', description: '인사 및 마무리', scoreGuide: [
           '5점: 표준 인사 정확히 준수, 종료 시 추가 문의 확인 + 감사 인사',
           '4점: 인사 또는 마무리 중 한 가지가 약간 미흡',
           '3점: 인사는 했으나 형식적, 마무리 시 추가 문의 확인 누락',
           '2점: 인사 또는 마무리 중 하나를 생략',
           '1점: 인사와 마무리 모두 부재 또는 부적절',
         ]),
-        QACriteria(name: '경청/공감', description: 'Listening & Empathy', scoreGuide: [
+        QACriteria(name: '경청/공감', description: '경감 및 공감', scoreGuide: [
           '5점: 고객 문의를 정확히 요약/반복하여 확인, 자연스러운 공감 표현',
           '4점: 문의 파악은 정확하나 공감 표현이 다소 부족',
           '3점: 재확인 필요했으나 최종적으로 정확히 이해',
           '2점: 고객 의도를 오해하여 수정',
           '1점: 고객의 말을 끊거나 문의 내용을 잘못 파악',
         ]),
-        QACriteria(name: '정확성', description: 'Accuracy', scoreGuide: [
+        QACriteria(name: '정확성', description: '정확성', scoreGuide: [
           '5점: 제품 정보, 정책, 매장 정보를 모두 정확하게 안내',
           '4점: 핵심 정보는 정확하나 부가 정보에 경미한 부정확 1건',
           '3점: 주요 안내 중 1건의 오류가 있었으나 큰 영향 없음',
           '2점: 핵심 안내에 오류가 있어 고객이 혼란',
           '1점: 복수의 중요 정보에 오류',
         ]),
-        QACriteria(name: '해결력', description: 'Resolution', scoreGuide: [
+        QACriteria(name: '해결력', description: '해결력', scoreGuide: [
           '5점: 1차 완결(FCR) 달성, 고객 만족 종료',
           '4점: 1차 완결이나 다소 시간 소요',
           '3점: 1차 완결 불가했으나 적절한 에스컬레이션',
           '2점: 에스컬레이션 기준에 해당하나 직접 해결하려다 지연',
           '1점: 해결 없이 종료 또는 부적절한 방법으로 상담 종료',
         ]),
-        QACriteria(name: '톤앤매너', description: 'Tone & Manner', scoreGuide: [
+        QACriteria(name: '톤앤매너', description: '톤 및 매너', scoreGuide: [
           '5점: 브랜드에 맞는 정중하되 전문적인 어조 유지',
           '4점: 전체적으로 양호하나 일부 구간에서 캐주얼해짐',
           '3점: 보통 수준의 어조, 브랜드 느낌 부족',

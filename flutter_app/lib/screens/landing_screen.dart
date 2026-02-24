@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -9,55 +8,36 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _mainController;
-  late AnimationController _floatController;
-  late AnimationController _pulseController;
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
   late Animation<double> _fadeIn;
   late Animation<Offset> _slideUp;
-  late Animation<double> _scaleLogo;
-  late Animation<double> _float;
-  late Animation<double> _pulse;
 
   @override
   void initState() {
     super.initState();
-    _mainController = AnimationController(
+    _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 1200),
     );
-    _floatController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3000),
-    )..repeat(reverse: true);
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-
-    _fadeIn = CurvedAnimation(parent: _mainController, curve: const Interval(0.0, 0.5, curve: Curves.easeOut));
-    _slideUp = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _mainController, curve: const Interval(0.15, 0.7, curve: Curves.easeOutCubic)));
-    _scaleLogo = Tween<double>(begin: 0.4, end: 1.0)
-        .animate(CurvedAnimation(parent: _mainController, curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)));
-    _float = Tween<double>(begin: -6, end: 6)
-        .animate(CurvedAnimation(parent: _floatController, curve: Curves.easeInOut));
-    _pulse = Tween<double>(begin: 0.95, end: 1.05)
-        .animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
-
-    _mainController.forward();
+    _fadeIn = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+    );
+    _slideUp = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.1, 0.7, curve: Curves.easeOutCubic),
+    ));
+    _controller.forward();
   }
 
   @override
   void dispose() {
-    _mainController.dispose();
-    _floatController.dispose();
-    _pulseController.dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _enterApp() {
-    Navigator.pushReplacementNamed(context, '/onboarding');
   }
 
   @override
@@ -66,182 +46,148 @@ class _LandingScreenState extends State<LandingScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Animated background circles
-          _buildBackgroundDecor(cs, isDark),
-          // Main content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
+      backgroundColor: isDark ? cs.surface : Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: FadeTransition(
+            opacity: _fadeIn,
+            child: SlideTransition(
+              position: _slideUp,
               child: Column(
                 children: [
+                  const Spacer(flex: 3),
+                  _buildLogo(cs),
+                  const SizedBox(height: 28),
+                  _buildTitle(cs),
+                  const SizedBox(height: 12),
+                  Text(
+                    '1인 사장님을 위한\nCS 운영 자동 설계 도구',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: cs.onSurface.withValues(alpha: 0.5),
+                      height: 1.5,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
                   const Spacer(flex: 2),
-                  // Floating logo with glow
-                  AnimatedBuilder(
-                    animation: Listenable.merge([_mainController, _floatController]),
-                    builder: (ctx, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _float.value),
-                        child: FadeTransition(
-                          opacity: _fadeIn,
-                          child: ScaleTransition(scale: _scaleLogo, child: child),
-                        ),
-                      );
-                    },
-                    child: _buildLogoSection(cs, isDark),
-                  ),
-                  const SizedBox(height: 32),
-                  // Title & subtitle
-                  FadeTransition(
-                    opacity: _fadeIn,
-                    child: SlideTransition(
-                      position: _slideUp,
-                      child: _buildTitleSection(cs),
+                  _buildFeatureCards(cs, isDark),
+                  const Spacer(flex: 2),
+                  _buildCTAButton(cs),
+                  const SizedBox(height: 12),
+                  Text(
+                    '3분이면 CS 운영 설계 완료',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: cs.onSurface.withValues(alpha: 0.3),
                     ),
                   ),
-                  const Spacer(flex: 1),
-                  // Feature cards
-                  FadeTransition(
-                    opacity: _fadeIn,
-                    child: SlideTransition(
-                      position: _slideUp,
-                      child: _buildFeatureCards(cs, isDark),
+                  const SizedBox(height: 8),
+                  Text(
+                    'v2.0.0',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: cs.onSurface.withValues(alpha: 0.2),
+                      letterSpacing: 1,
                     ),
                   ),
-                  const Spacer(flex: 1),
-                  // CTA Button
-                  FadeTransition(
-                    opacity: _fadeIn,
-                    child: SlideTransition(
-                      position: _slideUp,
-                      child: _buildCTAButton(cs),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Version
-                  FadeTransition(
-                    opacity: _fadeIn,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Text(
-                        'v2.0.0',
-                        style: TextStyle(fontSize: 11, color: cs.onSurface.withValues(alpha: 0.25), letterSpacing: 1),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildBackgroundDecor(ColorScheme cs, bool isDark) {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (ctx, _) {
-        return CustomPaint(
-          painter: _BgCirclePainter(
-            color1: cs.primary.withValues(alpha: isDark ? 0.08 : 0.06),
-            color2: const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.05 : 0.04),
-            color3: const Color(0xFFEC4899).withValues(alpha: isDark ? 0.04 : 0.03),
-            animValue: _pulse.value,
-          ),
-          size: Size.infinite,
-        );
-      },
-    );
-  }
-
-  Widget _buildLogoSection(ColorScheme cs, bool isDark) {
+  Widget _buildLogo(ColorScheme cs) {
     return Container(
-      width: 100,
-      height: 100,
+      width: 88,
+      height: 88,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [cs.primary, const Color(0xFF8B5CF6)],
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1B64DA), Color(0xFF3B82F6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: cs.primary.withValues(alpha: 0.35),
-            blurRadius: 40,
-            offset: const Offset(0, 12),
+            color: const Color(0xFF1B64DA).withValues(alpha: 0.3),
+            blurRadius: 32,
+            offset: const Offset(0, 10),
             spreadRadius: -4,
-          ),
-          BoxShadow(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-            blurRadius: 60,
-            offset: const Offset(0, 20),
-            spreadRadius: -8,
           ),
         ],
       ),
-      child: const Icon(Icons.support_agent_rounded, color: Colors.white, size: 48),
+      child: const Icon(
+        Icons.support_agent_rounded,
+        color: Colors.white,
+        size: 44,
+      ),
     );
   }
 
-  Widget _buildTitleSection(ColorScheme cs) {
-    return Column(
-      children: [
-        ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
-            colors: [cs.primary, const Color(0xFF8B5CF6), const Color(0xFFEC4899)],
-          ).createShader(bounds),
-          child: const Text(
-            'CS Builder',
-            style: TextStyle(
-              fontSize: 38,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: -1.5,
-              height: 1.1,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          '3 minutes to set up your\ncustomer service center',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            color: cs.onSurface.withValues(alpha: 0.45),
-            height: 1.5,
-            letterSpacing: -0.3,
-          ),
-        ),
-      ],
+  Widget _buildTitle(ColorScheme cs) {
+    return Text(
+      'CS Builder',
+      style: TextStyle(
+        fontSize: 36,
+        fontWeight: FontWeight.w900,
+        color: cs.onSurface,
+        letterSpacing: -1.5,
+        height: 1.1,
+      ),
     );
   }
 
   Widget _buildFeatureCards(ColorScheme cs, bool isDark) {
     final features = [
-      _FeatureInfo(Icons.auto_awesome_rounded, 'AI Auto-Gen', 'FAQ, Scripts, Ops', const Color(0xFF6366F1)),
-      _FeatureInfo(Icons.analytics_rounded, 'QA Scoring', 'Real-time Eval', const Color(0xFF8B5CF6)),
-      _FeatureInfo(Icons.tune_rounded, 'Presets', '10 Industries', const Color(0xFFEC4899)),
+      _FeatureItem(
+        Icons.auto_awesome_rounded,
+        'AI 자동 생성',
+        'FAQ · 스크립트 · 운영설계',
+        const Color(0xFF1B64DA),
+      ),
+      _FeatureItem(
+        Icons.grading_rounded,
+        'QA 품질 평가',
+        '상담 품질 실시간 관리',
+        const Color(0xFF3B82F6),
+      ),
+      _FeatureItem(
+        Icons.tune_rounded,
+        '업종별 프리셋',
+        '10개 업종 맞춤 템플릿',
+        const Color(0xFF2563EB),
+      ),
     ];
 
     return Row(
-      children: features.map((f) {
+      children: features.asMap().entries.map((entry) {
+        final i = entry.key;
+        final f = entry.value;
         return Expanded(
           child: Container(
             margin: EdgeInsets.only(
-              left: f == features.first ? 0 : 6,
-              right: f == features.last ? 0 : 6,
+              left: i == 0 ? 0 : 5,
+              right: i == 2 ? 0 : 5,
             ),
             padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
             decoration: BoxDecoration(
-              color: isDark ? cs.surface : Colors.white,
+              color: isDark
+                  ? cs.surface.withValues(alpha: 0.8)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: f.color.withValues(alpha: 0.15)),
+              border: Border.all(
+                color: cs.onSurface.withValues(alpha: 0.06),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: f.color.withValues(alpha: isDark ? 0.05 : 0.08),
-                  blurRadius: 20,
+                  color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
+                  blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -250,21 +196,33 @@ class _LandingScreenState extends State<LandingScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [f.color.withValues(alpha: 0.15), f.color.withValues(alpha: 0.05)],
-                      begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(13),
+                    color: f.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(f.icon, size: 22, color: f.color),
                 ),
                 const SizedBox(height: 10),
-                Text(f.title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.onSurface, letterSpacing: -0.2)),
-                const SizedBox(height: 2),
-                Text(f.subtitle, style: TextStyle(fontSize: 10, color: cs.onSurface.withValues(alpha: 0.4))),
+                Text(
+                  f.title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  f.subtitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    color: cs.onSurface.withValues(alpha: 0.4),
+                  ),
+                ),
               ],
             ),
           ),
@@ -274,95 +232,45 @@ class _LandingScreenState extends State<LandingScreen>
   }
 
   Widget _buildCTAButton(ColorScheme cs) {
-    return Column(
-      children: [
-        AnimatedBuilder(
-          animation: _pulseController,
-          builder: (ctx, child) {
-            return Transform.scale(scale: _pulse.value, child: child);
-          },
-          child: Container(
-            width: double.infinity,
-            height: 58,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [cs.primary, const Color(0xFF8B5CF6)],
-                begin: Alignment.centerLeft, end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.primary.withValues(alpha: 0.4),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                  spreadRadius: -4,
-                ),
-              ],
-            ),
-            child: ElevatedButton(
-              onPressed: _enterApp,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Start Building', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: -0.3, color: Colors.white)),
-                  SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
-                ],
-              ),
-            ),
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.pushReplacementNamed(context, '/onboarding');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1B64DA),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
-          '3 minutes to complete CS operations setup',
-          style: TextStyle(fontSize: 12, color: cs.onSurface.withValues(alpha: 0.3)),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '시작하기',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+              ),
+            ),
+            SizedBox(width: 6),
+            Icon(Icons.arrow_forward_rounded, size: 20),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
 
-class _FeatureInfo {
+class _FeatureItem {
   final IconData icon;
   final String title;
   final String subtitle;
   final Color color;
-  const _FeatureInfo(this.icon, this.title, this.subtitle, this.color);
-}
-
-class _BgCirclePainter extends CustomPainter {
-  final Color color1, color2, color3;
-  final double animValue;
-  _BgCirclePainter({required this.color1, required this.color2, required this.color3, required this.animValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scale = animValue;
-    // Top-right circle
-    canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.08),
-      160 * scale,
-      Paint()..color = color1,
-    );
-    // Left-center circle
-    canvas.drawCircle(
-      Offset(size.width * -0.1, size.height * 0.45),
-      200 * scale,
-      Paint()..color = color2,
-    );
-    // Bottom-right circle
-    canvas.drawCircle(
-      Offset(size.width * 0.9, size.height * 0.85),
-      140 * scale,
-      Paint()..color = color3,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _BgCirclePainter old) => old.animValue != animValue;
+  const _FeatureItem(this.icon, this.title, this.subtitle, this.color);
 }

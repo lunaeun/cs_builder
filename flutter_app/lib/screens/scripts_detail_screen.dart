@@ -5,7 +5,6 @@ import '../providers/app_provider.dart';
 import '../services/export_service.dart';
 import '../widgets/upgrade_dialog.dart';
 
-
 class ScriptsDetailScreen extends StatefulWidget {
   const ScriptsDetailScreen({super.key});
 
@@ -22,173 +21,178 @@ class _ScriptsDetailScreenState extends State<ScriptsDetailScreen> {
     return Consumer<AppProvider>(
       builder: (ctx, provider, _) {
         final scripts = provider.scripts;
-        if (scripts.isEmpty) return Scaffold(body: Center(child: Text('생성된 문서가 없습니다.', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.4)))));
+        if (scripts.isEmpty) {
+          return Scaffold(body: Center(child: Text('스크립트를 먼저 생성해주세요.', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.4)))));
+        }
 
         final brand = provider.profile.brandName.isEmpty ? provider.profile.companyName : provider.profile.brandName;
         if (_selectedIndex >= scripts.length) _selectedIndex = 0;
-        final selected = scripts[_selectedIndex];
+        final current = scripts[_selectedIndex];
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('상담 스크립트'),
+            title: const Text('응대 스크립트', style: TextStyle(fontWeight: FontWeight.w700)),
             actions: [
-              Center(child: Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Text('${scripts.length}개', style: TextStyle(fontSize: 13, color: cs.primary, fontWeight: FontWeight.w600)),
-              )),
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert_rounded, size: 20, color: cs.onSurface.withValues(alpha: 0.6)),
-                               onSelected: (val) {
-                  if (!provider.canDownload) {
-                    UpgradeDialog.show(context, feature: '스크립트 내보내기', requiredPlan: provider.requiredPlanForDownload);
+                onSelected: (v) {
+                  if (provider.currentPlan == 'free') {
+		UpgradeDialog.show(context, feature: '스크립트 내보내기');
                     return;
                   }
-                  if (val == 'copy_all') {
-                    final text = DocumentExportService.exportScriptsAsText(scripts, brand);
-                    Clipboard.setData(ClipboardData(text: text));
-                    _showSnack('전체 스크립트가 클립보드에 복사되었습니다');
-                  } else if (val == 'copy_current') {
-                    final text = DocumentExportService.exportScriptsAsText([selected], brand);
-                    Clipboard.setData(ClipboardData(text: text));
-                    _showSnack('현재 스크립트가 클립보드에 복사되었습니다');
+                  if (v == 'all') {
+                    final buf = StringBuffer();
+                    for (final s in scripts) {
+                      buf.writeln('[$brand] ${s.scenarioName}');
+                      buf.writeln('채널: ${s.channel} | 상황: ${s.situation}');
+                      for (int i = 0; i < s.steps.length; i++) {
+                        buf.writeln('${i + 1}. ${s.steps[i].content}');
+                        if (s.steps[i].note.isNotEmpty) {
+                          buf.writeln('   메모: ${s.steps[i].note}');
+                        }
+                      }
+                      buf.writeln('---');
+                    }
+                    Clipboard.setData(ClipboardData(text: buf.toString()));
+                    _showSnack('전체 스크립트 복사됨');
+                  } else {
+                    final buf = StringBuffer();
+                    buf.writeln('[$brand] ${current.scenarioName}');
+                    buf.writeln('채널: ${current.channel} | 상황: ${current.situation}');
+                    for (int i = 0; i < current.steps.length; i++) {
+                      buf.writeln('${i + 1}. ${current.steps[i].content}');
+                      if (current.steps[i].note.isNotEmpty) {
+                        buf.writeln('   메모: ${current.steps[i].note}');
+                      }
+                    }
+                    Clipboard.setData(ClipboardData(text: buf.toString()));
+                    _showSnack('스크립트 복사됨');
                   }
                 },
-
                 itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'copy_all', child: Row(children: [Icon(Icons.content_copy, size: 16), SizedBox(width: 8), Text('전체 스크립트 복사')])),
-                  const PopupMenuItem(value: 'copy_current', child: Row(children: [Icon(Icons.copy, size: 16), SizedBox(width: 8), Text('현재 스크립트 복사')])),
+                  const PopupMenuItem(value: 'all', child: Text('전체 스크립트 복사')),
+                  const PopupMenuItem(value: 'current', child: Text('현재 스크립트 복사')),
                 ],
               ),
             ],
           ),
           body: Column(
             children: [
-              // Script selector
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: Row(
+                  children: [
+                    Text('총 ${scripts.length}건', style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.5))),
+                  ],
+                ),
+              ),
               SizedBox(
-                height: 44,
-                child: ListView.separated(
+                height: 48,
+                child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: scripts.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (_, i) {
                     final isSelected = i == _selectedIndex;
-                    final s = scripts[i];
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedIndex = i),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected ? cs.primary : cs.surface,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: isSelected ? cs.primary : cs.outlineVariant),
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text('${i + 1}'),
+                        selected: isSelected,
+                        onSelected: (_) => setState(() => _selectedIndex = i),
+                        selectedColor: cs.primary,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : cs.onSurface,
+                          fontWeight: FontWeight.w600,
                         ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          if (s.isEdited) Padding(
-                            padding: const EdgeInsets.only(right: 4),
-                            child: Icon(Icons.edit_note, size: 14, color: isSelected ? Colors.white : cs.primary),
-                          ),
-                          Text(s.scenarioName, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isSelected ? Colors.white : cs.onSurface.withValues(alpha: 0.6))),
-                        ]),
                       ),
                     );
                   },
                 ),
               ),
-              const SizedBox(height: 12),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                  children: [
-                    // Script header
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: cs.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: cs.outlineVariant)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-                              child: Text(selected.channel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.primary)),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(color: cs.surfaceContainerHighest, borderRadius: BorderRadius.circular(6)),
-                              child: Text(selected.id, style: TextStyle(fontSize: 11, color: cs.onSurface.withValues(alpha: 0.4))),
-                            ),
-                          ]),
-                          const SizedBox(height: 10),
-                          Text(selected.scenarioName, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: cs.onSurface)),
-                          const SizedBox(height: 4),
-                          Text(selected.situation, style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.4))),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Steps
-                    ...selected.steps.asMap().entries.map((entry) {
-                      final step = entry.value;
-                      final i = entry.key;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: Row(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: cs.primary.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(children: [
-                              Container(
-                                width: 28, height: 28,
-                                decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
-                                child: Center(child: Text('${i + 1}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white))),
-                              ),
-                              if (i < selected.steps.length - 1)
-                                Container(width: 1, height: 40, color: cs.outlineVariant),
-                            ]),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(color: cs.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: cs.outlineVariant)),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(children: [
-                                      Text(step.label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.primary)),
-                                      const Spacer(),
-                                      InkWell(
-                                        onTap: () => _showStepEditDialog(_selectedIndex, i, step, provider, cs),
-                                        child: Icon(Icons.edit_rounded, size: 14, color: cs.onSurface.withValues(alpha: 0.3)),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      InkWell(
-                                        onTap: () {
-                                          Clipboard.setData(ClipboardData(text: '[${step.label}]\n${step.content}'));
-                                          _showSnack('스텝이 복사되었습니다');
-                                        },
-                                        child: Icon(Icons.content_copy_rounded, size: 14, color: cs.onSurface.withValues(alpha: 0.3)),
-                                      ),
-                                    ]),
-                                    const SizedBox(height: 6),
-                                    SelectableText(step.content, style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6), height: 1.6)),
-                                    if (step.note.isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                                        child: Text(step.note, style: TextStyle(fontSize: 11, color: const Color(0xFFF59E0B).withValues(alpha: 0.8))),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
+                            Text(current.scenarioName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                _infoBadge('채널', current.channel, cs),
+                                const SizedBox(width: 8),
+                                _infoBadge('ID', current.id, cs),
+                              ],
                             ),
+                            const SizedBox(height: 6),
+                            Text('상황: ${current.situation}', style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
                           ],
                         ),
-                      );
-                    }),
-                  ],
+                      ),
+                      const SizedBox(height: 20),
+                      ...List.generate(current.steps.length, (i) {
+                        final step = current.steps[i];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: cs.surface,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: cs.outline.withValues(alpha: 0.1)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 28, height: 28,
+                                    decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(8)),
+                                    child: Center(child: Text('${i + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13))),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(child: Text(step.content, style: TextStyle(fontSize: 14, color: cs.onSurface))),
+                                  IconButton(
+                                    icon: Icon(Icons.edit_outlined, size: 18, color: cs.onSurface.withValues(alpha: 0.4)),
+                                    onPressed: () => _showEditDialog(context, provider, _selectedIndex, i, step),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.copy_outlined, size: 18, color: cs.onSurface.withValues(alpha: 0.4)),
+                                    onPressed: () {
+                                      Clipboard.setData(ClipboardData(text: step.content));
+                                      _showSnack('복사됨!');
+                                    },
+                                  ),
+                                ],
+                              ),
+                              if (step.note.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: cs.primary.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text('메모: ${step.note}', style: TextStyle(fontSize: 12, color: cs.onSurface.withValues(alpha: 0.5), fontStyle: FontStyle.italic)),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -198,36 +202,45 @@ class _ScriptsDetailScreenState extends State<ScriptsDetailScreen> {
     );
   }
 
-  void _showStepEditDialog(int scriptIdx, int stepIdx, dynamic step, AppProvider provider, ColorScheme cs) {
+  Widget _infoBadge(String label, String value, ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: cs.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text('$label: $value', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.primary)),
+    );
+  }
+
+  void _showEditDialog(BuildContext context, AppProvider provider, int scriptIdx, int stepIdx, dynamic step) {
+    final cs = Theme.of(context).colorScheme;
     final contentCtrl = TextEditingController(text: step.content);
     final noteCtrl = TextEditingController(text: step.note);
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(ctx).viewInsets.bottom + 20),
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cs.outlineVariant, borderRadius: BorderRadius.circular(2)))),
+      builder: (ctx) => AlertDialog(
+        title: const Text('단계 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('단계 ${stepIdx + 1}: ${step.label}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
             const SizedBox(height: 16),
-            Text('스텝 편집: ${step.label}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: cs.onSurface)),
-            const SizedBox(height: 16),
-            TextField(controller: contentCtrl, maxLines: 6, decoration: InputDecoration(labelText: '대화 내용', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
+            TextField(controller: contentCtrl, maxLines: 6, decoration: InputDecoration(labelText: '내용', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
             const SizedBox(height: 12),
-            TextField(controller: noteCtrl, decoration: InputDecoration(labelText: '참고사항 (선택)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
+            TextField(controller: noteCtrl, decoration: InputDecoration(labelText: '메모 (선택)', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
             const SizedBox(height: 16),
             SizedBox(width: double.infinity, child: ElevatedButton(
               onPressed: () {
                 provider.updateScriptStep(scriptIdx, stepIdx, content: contentCtrl.text, note: noteCtrl.text);
                 Navigator.pop(ctx);
-                _showSnack('스크립트가 수정되었습니다');
+                _showSnack('수정됨!');
               },
               child: const Text('저장'),
             )),
-          ]),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 

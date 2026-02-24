@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/generated_documents.dart';
 import '../services/export_service.dart';
-import '../services/export_service.dart';
 import '../theme/app_theme.dart';
 import 'subscription_screen.dart';
 import '../widgets/upgrade_dialog.dart';
@@ -38,9 +37,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           currentIndex: _navIndex,
           onTap: (i) => setState(() => _navIndex = i),
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.folder_copy_rounded), label: 'Docs'),
-            BottomNavigationBarItem(icon: Icon(Icons.tune_rounded), label: 'Settings'),
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: '홈'),
+            BottomNavigationBarItem(icon: Icon(Icons.folder_copy_rounded), label: '문서'),
+            BottomNavigationBarItem(icon: Icon(Icons.tune_rounded), label: '설정'),
           ],
         ),
       ),
@@ -81,7 +80,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildHomeHeader(AppProvider provider, ColorScheme cs) {
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good Morning' : (hour < 18 ? 'Good Afternoon' : 'Good Evening');
+    final greeting = hour < 12 ? '좋은 아침이에요' : (hour < 18 ? '안녕하세요' : '좋은 저녁이에요');
     return Row(
       children: [
         Container(
@@ -145,12 +144,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      p.brandName.isEmpty ? 'Brand' : p.brandName,
+                      p.brandName.isEmpty ? '브랜드' : p.brandName,
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: isDark ? cs.onSurface : Colors.white, letterSpacing: -0.5),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      p.industryType.isEmpty ? 'No industry' : p.industryType,
+                      p.industryType.isEmpty ? '업종 미설정' : p.industryType,
                       style: TextStyle(fontSize: 13, color: isDark ? cs.onSurface.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.8)),
                     ),
                   ],
@@ -168,9 +167,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Row(
               children: [
-                _buildStatChip(Icons.people_alt_rounded, '${p.agentCount}', isDark ? cs.onSurface : Colors.white),
+                _buildStatChip(Icons.people_alt_rounded, '${p.agentCount}명', isDark ? cs.onSurface : Colors.white),
                 _buildStatDivider(isDark ? cs.onSurface : Colors.white),
-                _buildStatChip(Icons.headset_mic_rounded, '${p.dailyCalls}/day', isDark ? cs.onSurface : Colors.white),
+                _buildStatChip(Icons.headset_mic_rounded, '${p.dailyCalls}건/일', isDark ? cs.onSurface : Colors.white),
                 _buildStatDivider(isDark ? cs.onSurface : Colors.white),
                 _buildStatChip(Icons.account_balance_wallet_rounded, _formatBudget(p.monthlyBudget), isDark ? cs.onSurface : Colors.white),
               ],
@@ -234,8 +233,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('CS Operation Progress', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface)),
-                    Text(isComplete ? 'All ready!' : 'Check next tasks', style: TextStyle(fontSize: 11, color: cs.onSurface.withValues(alpha: 0.4))),
+                    Text('CS 운영 진행률', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface)),
+                    Text(isComplete ? '모두 완료!' : '다음 할 일을 확인하세요', style: TextStyle(fontSize: 11, color: cs.onSurface.withValues(alpha: 0.4))),
                   ],
                 ),
               ),
@@ -269,11 +268,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildQuickStats(AppProvider provider, ColorScheme cs) {
     final p = provider.profile;
     final channels = <_ChInfo>[];
-    if (p.usePhoneChannel) channels.add(_ChInfo('Phone', Icons.phone_rounded, const Color(0xFF1B64DA)));
-    if (p.useChannelTalk) channels.add(_ChInfo('ChannelTalk', Icons.chat_rounded, const Color(0xFF3B82F6)));
-    if (p.useEmailChannel) channels.add(_ChInfo('Email', Icons.email_rounded, const Color(0xFF2563EB)));
+    if (p.usePhoneChannel) channels.add(_ChInfo('전화', Icons.phone_rounded, const Color(0xFF1B64DA)));
+    if (p.useChannelTalk) channels.add(_ChInfo('채널톡', Icons.chat_rounded, const Color(0xFF3B82F6)));
+    if (p.useEmailChannel) channels.add(_ChInfo('이메일', Icons.email_rounded, const Color(0xFF2563EB)));
     if (p.useSnsChannel) channels.add(_ChInfo('SNS', Icons.forum_rounded, const Color(0xFF2563EB)));
-    if (p.useBoardChannel) channels.add(_ChInfo('Board', Icons.dashboard_rounded, const Color(0xFF60A5FA)));
+    if (p.useBoardChannel) channels.add(_ChInfo('게시판', Icons.dashboard_rounded, const Color(0xFF60A5FA)));
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -289,7 +288,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Icon(Icons.cell_tower_rounded, size: 16, color: cs.onSurface.withValues(alpha: 0.4)),
               const SizedBox(width: 6),
-              Text('Active Channels', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
+              Text('활성 채널', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -315,7 +314,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ]),
             )).toList(),
           ),
-          // Agent roles
           if (provider.profile.agentRoles.isNotEmpty) ...[
             const SizedBox(height: 14),
             Divider(color: cs.outlineVariant.withValues(alpha: 0.3)),
@@ -324,7 +322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Icon(Icons.badge_rounded, size: 16, color: cs.onSurface.withValues(alpha: 0.4)),
                 const SizedBox(width: 6),
-                Text('Agents', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
+                Text('상담원', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
                 const Spacer(),
                 Text('${provider.profile.agentRoles.length}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.primary)),
               ],
@@ -343,7 +341,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(child: Text(
-                    role.name.replaceAll('Agent ', '').replaceAll('agent ', ''),
+                    role.name.replaceAll('Agent ', '').replaceAll('agent ', '').replaceAll('상담원 ', ''),
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: role.isPrimary ? cs.primary : cs.onSurface.withValues(alpha: 0.4)),
                   )),
                 ),
@@ -369,7 +367,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(children: [
           Icon(Icons.description_rounded, size: 16, color: cs.onSurface.withValues(alpha: 0.4)),
           const SizedBox(width: 6),
-          Text('Documents', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
+          Text('문서', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -451,7 +449,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    isGenerated ? 'View' : (isGenerating ? '...' : 'Pending'),
+                    isGenerated ? '보기' : (isGenerating ? '...' : '대기'),
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isGenerated ? docColor : cs.onSurface.withValues(alpha: 0.35)),
                   ),
                 ),
@@ -471,7 +469,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(Icons.checklist_rtl_rounded, size: 16, color: cs.onSurface.withValues(alpha: 0.4)),
             const SizedBox(width: 6),
-            Text('Action Center', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
+            Text('할 일 목록', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface.withValues(alpha: 0.5))),
           ],
         ),
         const SizedBox(height: 10),
@@ -551,16 +549,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         boxShadow: [BoxShadow(color: cs.primary.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))],
       ),
       child: ElevatedButton.icon(
-onPressed: provider.profile.isComplete ? () {
+        onPressed: provider.profile.isComplete ? () {
           if (!provider.canGenerate) {
-            UpgradeDialog.show(context, feature: 'AI 문서 생성 (${provider.aiGenerateCount}/${provider.aiGenerateLimit}회 사용)', requiredPlan: 'Basic');
+            UpgradeDialog.show(context, feature: 'AI 문서 생성 (${provider.aiGenerateCount}/${provider.aiGenerateLimit} 사용)', requiredPlan: 'Basic');
             return;
           }
           provider.incrementAICount();
           provider.generateAllDocuments();
         } : null,
         icon: const Icon(Icons.auto_awesome_rounded, size: 20, color: Colors.white),
-        label: const Text('Generate All Documents', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        label: const Text('전체 문서 생성', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -582,7 +580,7 @@ onPressed: provider.profile.isComplete ? () {
               child: CircularProgressIndicator(strokeWidth: 3, color: cs.primary),
             ),
             const SizedBox(height: 16),
-            Text('Generating documents...', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5), fontSize: 14)),
+            Text('문서 생성 중...', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5), fontSize: 14)),
           ],
         ),
       ),
@@ -597,9 +595,9 @@ onPressed: provider.profile.isComplete ? () {
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            Text('Documents', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: cs.onSurface, letterSpacing: -0.8)),
+            Text('문서', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: cs.onSurface, letterSpacing: -0.8)),
             const SizedBox(height: 4),
-            Text('View and manage generated documents', style: TextStyle(fontSize: 14, color: cs.onSurface.withValues(alpha: 0.4))),
+            Text('생성된 문서를 확인하고 관리하세요', style: TextStyle(fontSize: 14, color: cs.onSurface.withValues(alpha: 0.4))),
             const SizedBox(height: 16),
             if (provider.isGenerated) ...[
               Container(
@@ -610,10 +608,10 @@ onPressed: provider.profile.isComplete ? () {
                 ),
                 child: OutlinedButton.icon(
                   icon: Icon(Icons.file_copy_rounded, size: 16, color: cs.primary),
-                  label: Text('Copy All to Clipboard', style: TextStyle(color: cs.primary)),
-               onPressed: () {
+                  label: Text('전체 복사', style: TextStyle(color: cs.primary)),
+                  onPressed: () {
                     if (!provider.canDownload) {
-                      UpgradeDialog.show(context, feature: '문서 전체 복사', requiredPlan: provider.requiredPlanForDownload);
+                      UpgradeDialog.show(context, feature: '문서 내보내기', requiredPlan: provider.requiredPlanForDownload);
                       return;
                     }
                     final text = DocumentExportService.exportAllAsText(
@@ -621,9 +619,15 @@ onPressed: provider.profile.isComplete ? () {
                     );
                     Clipboard.setData(ClipboardData(text: text));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('All documents copied (${text.length} chars)')),
+                      SnackBar(content: Text('전체 문서가 복사되었습니다 (${text.length}자)')),
                     );
                   },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: BorderSide(color: cs.primary.withValues(alpha: 0.2)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
             ],
@@ -677,7 +681,7 @@ onPressed: provider.profile.isComplete ? () {
                 gradient: LinearGradient(colors: [docColor.withValues(alpha: 0.12), docColor.withValues(alpha: 0.04)]),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('View', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: docColor)),
+              child: Text('보기', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: docColor)),
             ),
           ]),
         ),
@@ -692,9 +696,8 @@ onPressed: provider.profile.isComplete ? () {
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            Text('Settings', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: cs.onSurface, letterSpacing: -0.8)),
+            Text('설정', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: cs.onSurface, letterSpacing: -0.8)),
             const SizedBox(height: 20),
-            // Dark Mode
             _buildSettingsCard(
               leading: Container(
                 width: 40, height: 40,
@@ -707,32 +710,32 @@ onPressed: provider.profile.isComplete ? () {
                 ),
                 child: Icon(provider.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded, size: 20, color: Colors.white),
               ),
-              title: 'Dark Mode',
-              trailing: Switch(value: provider.isDarkMode, onChanged: (_) => provider.toggleDarkMode()),
+              title: '다크 모드',
+              trailing: Switch(value: provider.isDarkMode, onChanged: (_) => provider.toggleDarkMode(), activeColor: const Color(0xFF1B64DA)),
               cs: cs,
             ),
             const SizedBox(height: 8),
-                        _buildSettingsTile('구독 관리', Icons.workspace_premium_rounded, const Color(0xFF1B64DA),
+            _buildSettingsTile('구독 관리', Icons.workspace_premium_rounded, const Color(0xFF1B64DA),
               () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionScreen())), cs),
             const SizedBox(height: 8),
-            _buildSettingsTile('Edit Business Profile', Icons.business_center_rounded, const Color(0xFF1B64DA),
+            _buildSettingsTile('사업 프로필 수정', Icons.business_center_rounded, const Color(0xFF1B64DA),
               () => Navigator.pushReplacementNamed(context, '/onboarding'), cs),
             const SizedBox(height: 8),
-            _buildSettingsTile('Regenerate All Docs', Icons.refresh_rounded, const Color(0xFF3B82F6),
+            _buildSettingsTile('문서 전체 재생성', Icons.refresh_rounded, const Color(0xFF3B82F6),
               () => provider.generateAllDocuments(), cs),
             const SizedBox(height: 8),
-            _buildSettingsTile('Reset All Data', Icons.delete_forever_rounded, const Color(0xFFEF4444), () {
+            _buildSettingsTile('데이터 초기화', Icons.delete_forever_rounded, const Color(0xFFEF4444), () {
               showDialog(
                 context: context,
                 builder: (c) => AlertDialog(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  title: const Text('Reset All Data'),
-                  content: const Text('All data will be deleted permanently. Continue?'),
+                  title: const Text('데이터 초기화'),
+                  content: const Text('모든 데이터가 영구적으로 삭제됩니다. 계속하시겠습니까?'),
                   actions: [
-                    TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
+                    TextButton(onPressed: () => Navigator.pop(c), child: const Text('취소')),
                     TextButton(
                       onPressed: () { provider.resetAll(); Navigator.pop(c); Navigator.pushReplacementNamed(context, '/landing'); },
-                      child: const Text('Reset', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700)),
+                      child: const Text('초기화', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ),
@@ -740,10 +743,7 @@ onPressed: provider.profile.isComplete ? () {
             }, cs),
             const SizedBox(height: 40),
             Center(
-              child: ShaderMask(
-                shaderCallback: (bounds) => AppTheme.primaryGradient.createShader(bounds),
-                child: const Text('CS Builder v2.0.0', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-              ),
+              child: Text('CS Builder v2.0.0', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1B64DA))),
             ),
           ],
         );
@@ -811,9 +811,9 @@ onPressed: provider.profile.isComplete ? () {
   String _formatBudget(int amount) {
     if (amount >= 10000) {
       final man = amount ~/ 10000;
-      return '${man}M';
+      return '${man}만';
     }
-    return amount.toString();
+    return '${amount}원';
   }
 }
 

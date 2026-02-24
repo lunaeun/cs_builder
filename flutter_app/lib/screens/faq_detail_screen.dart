@@ -67,9 +67,9 @@ class _FAQDetailScreenState extends State<FAQDetailScreen> {
                   else if (val == 'copy_csv') { UpgradeDialog.show(context, feature: 'CSV 내보내기', requiredPlan: 'Basic'); }
                 },
                 itemBuilder: (_) => [
-                  _popupItem('copy_text', Icons.text_snippet_rounded, 'Full Text'),
-                  _popupItem('copy_channeltalk', Icons.chat_rounded, 'ChannelTalk ALF'),
-                  _popupItem('copy_csv', Icons.table_chart_rounded, 'CSV Format'),
+                  _popupItem('copy_text', Icons.text_snippet_rounded, '전체 텍스트'),
+                  _popupItem('copy_channeltalk', Icons.chat_rounded, '채널톡 ALF 형식'),
+                  _popupItem('copy_csv', Icons.table_chart_rounded, 'CSV 형식'),
                 ],
               ),
             ],
@@ -185,8 +185,8 @@ class _FAQDetailScreenState extends State<FAQDetailScreen> {
                     _badge(faq.category, AppTheme.success, AppTheme.successLight),
                     if (faq.channel != '전체') ...[const SizedBox(width: 6), _badge(faq.channel, cs.primary, cs.primary.withValues(alpha: 0.08))],
                     const Spacer(),
-                    _actionBtn(Icons.edit_rounded, 'Edit', cs.primary, () => _showEditDialog(realIndex, faq, provider, cs)),
-                    _actionBtn(Icons.content_copy_rounded, 'Copy', cs.onSurface.withValues(alpha: 0.4), () {
+                    _actionBtn(Icons.edit_rounded, '편집', cs.primary, () => _showEditDialog(realIndex, faq, provider, cs)),
+                    _actionBtn(Icons.content_copy_rounded, '복사', cs.onSurface.withValues(alpha: 0.4), () {
                       Clipboard.setData(ClipboardData(text: 'Q: ${faq.question}\nA: ${faq.answer}'));
                       _showSnack('FAQ copied');
                     }),
@@ -242,11 +242,11 @@ class _FAQDetailScreenState extends State<FAQDetailScreen> {
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cs.outlineVariant, borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 20),
-            Text('Edit FAQ Answer', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: cs.onSurface)),
+            Text('FAQ 답변 수정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: cs.onSurface)),
             const SizedBox(height: 6),
             Text(faq.question, style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.4))),
             const SizedBox(height: 16),
-            TextField(controller: answerCtrl, maxLines: 8, decoration: InputDecoration(hintText: 'Edit your answer', border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)))),
+            TextField(controller: answerCtrl, maxLines: 8, decoration: InputDecoration(hintText: '답변을 수정하세요', border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)))),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
