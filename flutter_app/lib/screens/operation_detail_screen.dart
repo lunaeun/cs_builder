@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../services/export_service.dart';
+import '../widgets/upgrade_dialog.dart';
+
 
 class OperationDetailScreen extends StatefulWidget {
   const OperationDetailScreen({super.key});
@@ -65,17 +67,17 @@ class _OperationDetailScreenState extends State<OperationDetailScreen> {
             actions: [
               PopupMenuButton<String>(
                 icon: Icon(Icons.more_vert_rounded, size: 20, color: cs.onSurface.withValues(alpha: 0.6)),
-                onSelected: (val) {
+                                onSelected: (val) {
+                  if (!provider.canDownload) {
+                    UpgradeDialog.show(context, feature: '운영설계서 내보내기', requiredPlan: provider.requiredPlanForDownload);
+                    return;
+                  }
                   if (val == 'copy_all') {
                     final text = DocumentExportService.exportOperationDesignAsText(op, brand);
                     Clipboard.setData(ClipboardData(text: text));
                     _showSnack('운영설계서 전체가 복사되었습니다');
                   }
                 },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'copy_all', child: Row(children: [Icon(Icons.content_copy, size: 16), SizedBox(width: 8), Text('전체 텍스트 복사')])),
-                ],
-              ),
             ],
           ),
           endDrawer: Drawer(
