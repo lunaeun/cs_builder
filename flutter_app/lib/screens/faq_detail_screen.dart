@@ -62,9 +62,10 @@ class _FAQDetailScreenState extends State<FAQDetailScreen> {
               PopupMenuButton<String>(
                 icon: Icon(Icons.ios_share_rounded, size: 20, color: cs.onSurface.withValues(alpha: 0.6)),
                 onSelected: (val) {
-                   if (val == 'copy_text') { UpgradeDialog.show(context, feature: 'FAQ 내보내기', requiredPlan: 'Basic'); }
+                  if (val == 'copy_text') { UpgradeDialog.show(context, feature: 'FAQ 내보내기', requiredPlan: 'Basic'); }
                   else if (val == 'copy_channeltalk') { UpgradeDialog.show(context, feature: 'ChannelTalk 연동', requiredPlan: 'Pro'); }
                   else if (val == 'copy_csv') { UpgradeDialog.show(context, feature: 'CSV 내보내기', requiredPlan: 'Basic'); }
+                },
                 itemBuilder: (_) => [
                   _popupItem('copy_text', Icons.text_snippet_rounded, 'Full Text'),
                   _popupItem('copy_channeltalk', Icons.chat_rounded, 'ChannelTalk ALF'),
