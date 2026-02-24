@@ -15,8 +15,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    ㅍbool _isYearly = false;
-  bool _isProcessing = false;
+    final provider = context.watch<AppProvider>();
+    final _currentPlan = provider.currentPlan;
 
   final List<_PlanInfo> _plans = [
     _PlanInfo(
@@ -321,7 +321,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
     // 무료 플랜은 결제 없이 바로 변경
     if (price == 0) {
-      setState(() => _currentPlan = plan.id);
+      context.read<AppProvider>().updatePlan(plan.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -375,9 +375,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       if (!mounted) return;
 
       if (result['success'] == true) {
-        setState(() {
-          _currentPlan = plan.id;
-          _isProcessing = false;
+        context.read<AppProvider>().updatePlan(plan.id);
+        setState(() => _isProcessing = false);
         });
         _showResultDialog(
           success: true,
