@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../services/export_service.dart';
+import '../widgets/upgrade_dialog.dart';
+
 
 class ScriptsDetailScreen extends StatefulWidget {
   const ScriptsDetailScreen({super.key});
@@ -36,7 +38,11 @@ class _ScriptsDetailScreenState extends State<ScriptsDetailScreen> {
               )),
               PopupMenuButton<String>(
                 icon: Icon(Icons.more_vert_rounded, size: 20, color: cs.onSurface.withValues(alpha: 0.6)),
-                onSelected: (val) {
+                               onSelected: (val) {
+                  if (!provider.canDownload) {
+                    UpgradeDialog.show(context, feature: '스크립트 내보내기', requiredPlan: provider.requiredPlanForDownload);
+                    return;
+                  }
                   if (val == 'copy_all') {
                     final text = DocumentExportService.exportScriptsAsText(scripts, brand);
                     Clipboard.setData(ClipboardData(text: text));
@@ -47,6 +53,7 @@ class _ScriptsDetailScreenState extends State<ScriptsDetailScreen> {
                     _showSnack('현재 스크립트가 클립보드에 복사되었습니다');
                   }
                 },
+
                 itemBuilder: (_) => [
                   const PopupMenuItem(value: 'copy_all', child: Row(children: [Icon(Icons.content_copy, size: 16), SizedBox(width: 8), Text('전체 스크립트 복사')])),
                   const PopupMenuItem(value: 'copy_current', child: Row(children: [Icon(Icons.copy, size: 16), SizedBox(width: 8), Text('현재 스크립트 복사')])),
