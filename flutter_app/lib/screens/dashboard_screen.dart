@@ -396,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'quiz': const Color(0xFF1B64DA),
       'architecture': const Color(0xFF3B82F6),
       'grading': const Color(0xFF2563EB),
-      'description': const Color(0xFF60A5FA),
+'description': const Color(0xFF60A5FA),
     };
     final docColor = colorMap[doc.iconName] ?? cs.primary;
 
