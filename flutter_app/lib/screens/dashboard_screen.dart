@@ -266,11 +266,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildQuickStats(AppProvider provider, ColorScheme cs) {
     final p = provider.profile;
     final channels = <_ChInfo>[];
-    if (p.usePhoneChannel) channels.add(_ChInfo('Phone', Icons.phone_rounded, const Color(0xFF6366F1)));
-    if (p.useChannelTalk) channels.add(_ChInfo('ChannelTalk', Icons.chat_rounded, const Color(0xFF8B5CF6)));
-    if (p.useEmailChannel) channels.add(_ChInfo('Email', Icons.email_rounded, const Color(0xFFEC4899)));
-    if (p.useSnsChannel) channels.add(_ChInfo('SNS', Icons.forum_rounded, const Color(0xFFF59E0B)));
-    if (p.useBoardChannel) channels.add(_ChInfo('Board', Icons.dashboard_rounded, const Color(0xFF10B981)));
+    if (p.usePhoneChannel) channels.add(_ChInfo('Phone', Icons.phone_rounded, const Color(0xFF1B64DA)));
+    if (p.useChannelTalk) channels.add(_ChInfo('ChannelTalk', Icons.chat_rounded, const Color(0xFF3B82F6)));
+    if (p.useEmailChannel) channels.add(_ChInfo('Email', Icons.email_rounded, const Color(0xFF2563EB)));
+    if (p.useSnsChannel) channels.add(_ChInfo('SNS', Icons.forum_rounded, const Color(0xFF2563EB)));
+    if (p.useBoardChannel) channels.add(_ChInfo('Board', Icons.dashboard_rounded, const Color(0xFF60A5FA)));
 
     return Container(
       padding: const EdgeInsets.all(18),
