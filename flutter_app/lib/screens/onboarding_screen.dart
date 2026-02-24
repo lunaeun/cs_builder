@@ -4,6 +4,7 @@ import '../providers/app_provider.dart';
 import '../models/business_profile.dart';
 import '../models/generated_documents.dart';
 import '../theme/app_theme.dart';
+import '../utils/sanitizer.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -115,25 +116,44 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _submit() {
     final provider = context.read<AppProvider>();
     provider.updateProfile(BusinessProfile(
-      companyName: _companyNameCtrl.text, brandName: _brandNameCtrl.text, industryType: _industryType,
-      targetCustomer: _targetCustomerCtrl.text, mainProducts: _mainProductsCtrl.text,
-      salesChannels: _salesChannelsCtrl.text, agentCount: _agentCount, monthlyBudget: _monthlyBudget,
-      dailyCalls: _dailyCalls, storeAddress: _storeAddressCtrl.text, storeHours: _storeHoursCtrl.text,
-      parkingInfo: _parkingInfoCtrl.text, websiteUrl: _websiteCtrl.text, kakaoChannel: _kakaoCtrl.text,
-      instagramId: _instaCtrl.text, specialNotes: _specialNotesCtrl.text,
-      usePhoneChannel: _usePhone, useChannelTalk: _useChannelTalk, useEmailChannel: _useEmail,
-      useSnsChannel: _useSns, useBoardChannel: _useBoard, phoneNumber: _phoneNumberCtrl.text,
-      phoneOperatingHours: _phoneHoursCtrl.text, channelTalkId: _channelTalkIdCtrl.text,
-      channelTalkOperatingHours: _channelTalkHoursCtrl.text, channelTalkAlfEnabled: _alfEnabled,
-      supportEmail: _supportEmailCtrl.text, emailResponseTarget: _emailResponseTarget,
-      useKakaoConsult: _useKakao, useNaverTalkConsult: _useNaver, useInstaDmConsult: _useInstaDm,
-      snsOperatingHours: _snsHoursCtrl.text, agentRoles: _agentRoles,
+      companyName: InputSanitizer.sanitize(_companyNameCtrl.text),
+      brandName: InputSanitizer.sanitize(_brandNameCtrl.text),
+      industryType: _industryType,
+      targetCustomer: InputSanitizer.sanitize(_targetCustomerCtrl.text),
+      mainProducts: InputSanitizer.sanitize(_mainProductsCtrl.text),
+      salesChannels: InputSanitizer.sanitize(_salesChannelsCtrl.text),
+      agentCount: _agentCount,
+      monthlyBudget: _monthlyBudget,
+      dailyCalls: _dailyCalls,
+      storeAddress: InputSanitizer.sanitize(_storeAddressCtrl.text),
+      storeHours: InputSanitizer.sanitize(_storeHoursCtrl.text),
+      parkingInfo: InputSanitizer.sanitize(_parkingInfoCtrl.text),
+      websiteUrl: InputSanitizer.sanitizeUrl(_websiteCtrl.text),
+      kakaoChannel: InputSanitizer.sanitize(_kakaoCtrl.text),
+      instagramId: InputSanitizer.sanitize(_instaCtrl.text),
+      specialNotes: InputSanitizer.sanitize(_specialNotesCtrl.text),
+      usePhoneChannel: _usePhone,
+      useChannelTalk: _useChannelTalk,
+      useEmailChannel: _useEmail,
+      useSnsChannel: _useSns,
+      useBoardChannel: _useBoard,
+      phoneNumber: InputSanitizer.sanitizePhone(_phoneNumberCtrl.text),
+      phoneOperatingHours: InputSanitizer.sanitize(_phoneHoursCtrl.text),
+      channelTalkId: InputSanitizer.sanitize(_channelTalkIdCtrl.text),
+      channelTalkOperatingHours: InputSanitizer.sanitize(_channelTalkHoursCtrl.text),
+      channelTalkAlfEnabled: _alfEnabled,
+      supportEmail: InputSanitizer.sanitize(_supportEmailCtrl.text),
+      emailResponseTarget: _emailResponseTarget,
+      useKakaoConsult: _useKakao,
+      useNaverTalkConsult: _useNaver,
+      useInstaDmConsult: _useInstaDm,
+      snsOperatingHours: InputSanitizer.sanitize(_snsHoursCtrl.text),
+      agentRoles: _agentRoles,
     ));
     provider.setProfileCompleted(true);
     provider.generateAllDocuments();
     Navigator.pushReplacementNamed(context, '/dashboard');
   }
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;

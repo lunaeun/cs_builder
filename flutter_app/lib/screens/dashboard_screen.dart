@@ -50,6 +50,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildHome(ColorScheme cs) {
     return Consumer<AppProvider>(
       builder: (ctx, provider, _) {
+        if (provider.lastError != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.error_outline_rounded, color: Colors.white, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        provider.lastError!,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: const Color(0xFFEF4444),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: '다시 시도',
+                  textColor: Colors.white,
+                  onPressed: () => provider.generateAllDocuments(),
+                ),
+              ),
+            );
+            provider.clearError();
+          });
+        }
+
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           children: [

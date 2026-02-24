@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -14,6 +15,17 @@ import 'screens/scripts_detail_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+
+  try {
+    final keyBox = await Hive.openBox('keyBox');
+    if (!keyBox.containsKey('encryptionKey')) {
+      final key = Hive.generateSecureKey();
+      await keyBox.put('encryptionKey', base64UrlEncode(key));
+    }
+  } catch (e) {
+    // 키 생성 실패 시 앱은 비암호화 모드로 동작
+  }
+
   runApp(const CSBuilderApp());
 }
 

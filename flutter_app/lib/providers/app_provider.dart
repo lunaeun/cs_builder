@@ -19,6 +19,9 @@ class AppProvider extends ChangeNotifier {
   bool _isDarkMode = false;
   String _currentPlan = 'free';
   int _aiGenerateCount = 0;
+
+  String? lastError;
+
   BusinessProfile get profile => _profile;
   List<FAQItem> get faqs => _faqs;
   QAEvaluationSheet? get qaSheet => _qaSheet;
@@ -33,7 +36,6 @@ class AppProvider extends ChangeNotifier {
   String get currentPlan => _currentPlan;
   int get aiGenerateCount => _aiGenerateCount;
 
-  // 플랜별 기능 체크
   bool get canDownload => _currentPlan != 'free';
   bool get canExportCSV => _currentPlan != 'free';
   bool get canUseQA => _currentPlan == 'pro' || _currentPlan == 'business';
@@ -68,7 +70,6 @@ class AppProvider extends ChangeNotifier {
     _saveSettings();
   }
 
-  // Completion progress (0.0 ~ 1.0)
   double get completionProgress {
     if (_actionItems.isEmpty) return 0.0;
     final done = _actionItems.where((a) => a.isCompleted).length;
@@ -104,7 +105,11 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // === FAQ editing ===
+  void clearError() {
+    lastError = null;
+    notifyListeners();
+  }
+
   void updateFAQ(int index, {String? question, String? answer}) {
     if (index < 0 || index >= _faqs.length) return;
     if (answer != null) _faqs[index].updateAnswer(answer);
@@ -124,7 +129,6 @@ class AppProvider extends ChangeNotifier {
     if (newIndex > oldIndex) newIndex -= 1;
     final item = _faqs.removeAt(oldIndex);
     _faqs.insert(newIndex, item);
-    // Renumber
     for (int i = 0; i < _faqs.length; i++) {
       _faqs[i].id = 'FAQ-${(i + 1).toString().padLeft(2, '0')}';
     }
@@ -132,7 +136,6 @@ class AppProvider extends ChangeNotifier {
     _saveToHive();
   }
 
-  // === Script editing ===
   void updateScriptStep(int scriptIdx, int stepIdx, {String? content, String? note}) {
     if (scriptIdx < 0 || scriptIdx >= _scripts.length) return;
     final script = _scripts[scriptIdx];
@@ -143,20 +146,17 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // === Operation Design editing ===
   void updateOperationSection(String key, String value) {
     _operationDesign?.updateSection(key, value);
     notifyListeners();
   }
 
-  // === QA Evaluation ===
   void addQARecord(QAEvaluationRecord record) {
     _qaRecords.insert(0, record);
     notifyListeners();
     _saveQARecords();
   }
 
-  // === Action Items ===
   void toggleActionItem(String id) {
     final idx = _actionItems.indexWhere((a) => a.id == id);
     if (idx >= 0) {
@@ -166,113 +166,179 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  // === Document Generation ===
   Future<void> generateAllDocuments() async {
     _isGenerating = true;
+    lastError = null;
     notifyListeners();
 
-    if (_profile.agentRoles.isEmpty) {
-      _profile.agentRoles = _profile.generateDefaultRoles();
-    }
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    _faqs = DocumentGeneratorService.generateFAQ(_profile);
-    notifyListeners();
-
-    await Future.delayed(const Duration(milliseconds: 400));
-    _operationDesign = DocumentGeneratorService.generateOperationDesign(_profile);
-    notifyListeners();
-
-    await Future.delayed(const Duration(milliseconds: 300));
-    _qaSheet = DocumentGeneratorService.generateQASheet(_profile);
-    notifyListeners();
-
-    await Future.delayed(const Duration(milliseconds: 300));
-    _scripts = DocumentGeneratorService.generateScripts(_profile);
-    notifyListeners();
-
-    _actionItems = DocumentGeneratorService.generateActionItems(_profile);
-
-    _isGenerating = false;
-    _isGenerated = true;
-    notifyListeners();
-    await _saveToHive();
-  }
-
-  // === Persistence ===
-  Future<void> _saveToHive() async {
-    final box = await Hive.openBox('cs_builder');
-    await box.put('profile', jsonEncode(_profile.toMap()));
-    await box.put('isGenerated', _isGenerated);
-    await box.put('profileCompleted', _profileCompleted);
-    if (_faqs.isNotEmpty) {
-      await box.put('faqs', jsonEncode(_faqs.map((f) => f.toMap()).toList()));
-    }
-  }
-
-Future<void> _saveSettings() async {
-    final box = await Hive.openBox('cs_builder');
-    await box.put('isDarkMode', _isDarkMode);
-    await box.put('currentPlan', _currentPlan);
-    await box.put('aiGenerateCount', _aiGenerateCount);
-  }
-  Future<void> _saveQARecords() async {
-    final box = await Hive.openBox('cs_builder');
-    await box.put('qaRecords', jsonEncode(_qaRecords.map((r) => r.toMap()).toList()));
-  }
-
-  Future<void> _saveActionItems() async {
-    final box = await Hive.openBox('cs_builder');
-    await box.put('actionItems', jsonEncode(_actionItems.map((a) => a.toMap()).toList()));
-  }
-
-  Future<void> loadFromHive() async {
-    final box = await Hive.openBox('cs_builder');
-    final profileJson = box.get('profile');
-    if (profileJson != null) {
-      _profile = BusinessProfile.fromMap(jsonDecode(profileJson));
-    }
-    _profileCompleted = box.get('profileCompleted', defaultValue: false);
-    _isDarkMode = box.get('isDarkMode', defaultValue: false);
-    _currentPlan = box.get('currentPlan', defaultValue: 'free');
-    _aiGenerateCount = box.get('aiGenerateCount', defaultValue: 0);
-    // Load QA records
-    final qaJson = box.get('qaRecords');
-    if (qaJson != null) {
-      final list = jsonDecode(qaJson) as List;
-      _qaRecords = list.map((r) => QAEvaluationRecord.fromMap(r)).toList();
-    }
-
-    // Load action items
-    final actJson = box.get('actionItems');
-    if (actJson != null) {
-      final list = jsonDecode(actJson) as List;
-      _actionItems = list.map((a) => ActionItem.fromMap(a)).toList();
-    }
-
-    final wasGenerated = box.get('isGenerated', defaultValue: false);
-    if (wasGenerated && _profile.isComplete) {
-      // Try to load cached FAQs first
-      final faqsJson = box.get('faqs');
-      if (faqsJson != null) {
-        final list = jsonDecode(faqsJson) as List;
-        _faqs = list.map((f) => FAQItem.fromMap(f)).toList();
-      }
-      // Regenerate non-cached documents
+    try {
       if (_profile.agentRoles.isEmpty) {
         _profile.agentRoles = _profile.generateDefaultRoles();
       }
-      _operationDesign = DocumentGeneratorService.generateOperationDesign(_profile);
-      _qaSheet = DocumentGeneratorService.generateQASheet(_profile);
-      _scripts = DocumentGeneratorService.generateScripts(_profile);
-      if (_faqs.isEmpty) {
-        _faqs = DocumentGeneratorService.generateFAQ(_profile);
-      }
-      if (_actionItems.isEmpty) {
-        _actionItems = DocumentGeneratorService.generateActionItems(_profile);
-      }
-      _isGenerated = true;
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      _faqs = DocumentGeneratorService.generateFAQ(_profile);
       notifyListeners();
+
+      await Future.delayed(const Duration(milliseconds: 400));
+      _operationDesign = DocumentGeneratorService.generateOperationDesign(_profile);
+      notifyListeners();
+
+      await Future.delayed(const Duration(milliseconds: 300));
+      _qaSheet = DocumentGeneratorService.generateQASheet(_profile);
+      notifyListeners();
+
+      await Future.delayed(const Duration(milliseconds: 300));
+      _scripts = DocumentGeneratorService.generateScripts(_profile);
+      notifyListeners();
+
+      _actionItems = DocumentGeneratorService.generateActionItems(_profile);
+
+      _isGenerating = false;
+      _isGenerated = true;
+      lastError = null;
+      notifyListeners();
+      await _saveToHive();
+    } catch (e) {
+      _isGenerating = false;
+      lastError = '문서 생성 중 오류가 발생했습니다. 다시 시도해 주세요.';
+      notifyListeners();
+    }
+  }
+
+  Future<Box> _openSecureBox() async {
+    try {
+      final keyBox = await Hive.openBox('keyBox');
+      if (!keyBox.containsKey('encryptionKey')) {
+        final key = Hive.generateSecureKey();
+        await keyBox.put('encryptionKey', base64UrlEncode(key));
+      }
+      final encryptionKey = base64Url.decode(keyBox.get('encryptionKey'));
+      return await Hive.openBox('cs_builder_secure',
+          encryptionCipher: HiveAesCipher(encryptionKey));
+    } catch (e) {
+      return await Hive.openBox('cs_builder');
+    }
+  }
+
+  Future<void> _saveToHive() async {
+    try {
+      final box = await _openSecureBox();
+      await box.put('profile', jsonEncode(_profile.toMap()));
+      await box.put('isGenerated', _isGenerated);
+      await box.put('profileCompleted', _profileCompleted);
+      if (_faqs.isNotEmpty) {
+        await box.put('faqs', jsonEncode(_faqs.map((f) => f.toMap()).toList()));
+      }
+    } catch (e) {
+      // 저장 실패는 조용히 무시
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final box = await _openSecureBox();
+      await box.put('isDarkMode', _isDarkMode);
+      await box.put('currentPlan', _currentPlan);
+      await box.put('aiGenerateCount', _aiGenerateCount);
+    } catch (e) {
+      // 저장 실패 무시
+    }
+  }
+
+  Future<void> _saveQARecords() async {
+    try {
+      final box = await _openSecureBox();
+      await box.put('qaRecords', jsonEncode(_qaRecords.map((r) => r.toMap()).toList()));
+    } catch (e) {
+      // 저장 실패 무시
+    }
+  }
+
+  Future<void> _saveActionItems() async {
+    try {
+      final box = await _openSecureBox();
+      await box.put('actionItems', jsonEncode(_actionItems.map((a) => a.toMap()).toList()));
+    } catch (e) {
+      // 저장 실패 무시
+    }
+  }
+
+  Future<void> loadFromHive() async {
+    try {
+      final box = await _openSecureBox();
+      final profileJson = box.get('profile');
+      if (profileJson != null) {
+        _profile = BusinessProfile.fromMap(jsonDecode(profileJson));
+      }
+      _profileCompleted = box.get('profileCompleted', defaultValue: false);
+      _isDarkMode = box.get('isDarkMode', defaultValue: false);
+      _currentPlan = box.get('currentPlan', defaultValue: 'free');
+      _aiGenerateCount = box.get('aiGenerateCount', defaultValue: 0);
+
+      final qaJson = box.get('qaRecords');
+      if (qaJson != null) {
+        final list = jsonDecode(qaJson) as List;
+        _qaRecords = list.map((r) => QAEvaluationRecord.fromMap(r)).toList();
+      }
+
+      final actJson = box.get('actionItems');
+      if (actJson != null) {
+        final list = jsonDecode(actJson) as List;
+        _actionItems = list.map((a) => ActionItem.fromMap(a)).toList();
+      }
+
+      final wasGenerated = box.get('isGenerated', defaultValue: false);
+      if (wasGenerated && _profile.isComplete) {
+        final faqsJson = box.get('faqs');
+        if (faqsJson != null) {
+          final list = jsonDecode(faqsJson) as List;
+          _faqs = list.map((f) => FAQItem.fromMap(f)).toList();
+        }
+        if (_profile.agentRoles.isEmpty) {
+          _profile.agentRoles = _profile.generateDefaultRoles();
+        }
+        _operationDesign = DocumentGeneratorService.generateOperationDesign(_profile);
+        _qaSheet = DocumentGeneratorService.generateQASheet(_profile);
+        _scripts = DocumentGeneratorService.generateScripts(_profile);
+        if (_faqs.isEmpty) {
+          _faqs = DocumentGeneratorService.generateFAQ(_profile);
+        }
+        if (_actionItems.isEmpty) {
+          _actionItems = DocumentGeneratorService.generateActionItems(_profile);
+        }
+        _isGenerated = true;
+        notifyListeners();
+      }
+
+      await _migrateFromOldBox();
+    } catch (e) {
+      lastError = '저장된 데이터를 불러오는 중 오류가 발생했습니다';
+      notifyListeners();
+    }
+  }
+
+  Future<void> _migrateFromOldBox() async {
+    try {
+      if (await Hive.boxExists('cs_builder')) {
+        final oldBox = await Hive.openBox('cs_builder');
+        if (oldBox.isNotEmpty && !_profileCompleted) {
+          final oldProfile = oldBox.get('profile');
+          if (oldProfile != null && _profile.companyName.isEmpty) {
+            _profile = BusinessProfile.fromMap(jsonDecode(oldProfile));
+            _profileCompleted = oldBox.get('profileCompleted', defaultValue: false);
+            _isDarkMode = oldBox.get('isDarkMode', defaultValue: false);
+            _currentPlan = oldBox.get('currentPlan', defaultValue: 'free');
+            _aiGenerateCount = oldBox.get('aiGenerateCount', defaultValue: 0);
+            await _saveToHive();
+            await _saveSettings();
+          }
+          await oldBox.clear();
+        }
+        await oldBox.close();
+      }
+    } catch (e) {
+      // 마이그레이션 실패는 무시
     }
   }
 
@@ -287,8 +353,18 @@ Future<void> _saveSettings() async {
     _isGenerated = false;
     _isGenerating = false;
     _profileCompleted = false;
-    final box = await Hive.openBox('cs_builder');
-    await box.clear();
+    lastError = null;
+    try {
+      final box = await _openSecureBox();
+      await box.clear();
+      if (await Hive.boxExists('cs_builder')) {
+        final oldBox = await Hive.openBox('cs_builder');
+        await oldBox.clear();
+        await oldBox.close();
+      }
+    } catch (e) {
+      // 정리 실패 무시
+    }
     notifyListeners();
   }
 }

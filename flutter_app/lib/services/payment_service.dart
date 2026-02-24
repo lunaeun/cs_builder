@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 import 'package:web/web.dart' as web;
+import '../config/env.dart';
 
 @JS('Object')
 extension type JSObjectLiteral._(JSObject _) implements JSObject {
@@ -28,8 +29,8 @@ external JSAny? _getRawProperty(JSObject obj, String key);
 external JSPromise<JSAny?> _portOneRequestPayment(JSObject params);
 
 class PaymentService {
-  static const String storeId = 'store-ef9f35b0-d0cf-4b5a-b3ef-1ba341b5c10a';
-  static const String channelKey = 'channel-key-873a10d7-6355-43d1-9c15-b5b79aa23e61';
+  static String get storeId => Env.portOneStoreId;
+  static String get channelKey => Env.portOneChannelKey;
 
   static Future<Map<String, dynamic>> requestPayment({
     required String planId,
@@ -38,6 +39,10 @@ class PaymentService {
     required String buyerName,
     required String buyerEmail,
   }) async {
+    if (!Env.isPaymentConfigured) {
+      return {'success': false, 'message': '결제 설정이 완료되지 않았습니다. 관리자에게 문의하세요.'};
+    }
+
     final orderId = 'csbuilder_${planId}_${DateTime.now().millisecondsSinceEpoch}';
 
     try {
