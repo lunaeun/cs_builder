@@ -7,6 +7,7 @@ import '../services/export_service.dart';
 import '../services/export_service.dart';
 import '../theme/app_theme.dart';
 import 'subscription_screen.dart';
+import '../widgets/upgrade_dialog.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -550,7 +551,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         boxShadow: [BoxShadow(color: cs.primary.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 6))],
       ),
       child: ElevatedButton.icon(
-        onPressed: provider.profile.isComplete ? () => provider.generateAllDocuments() : null,
+onPressed: provider.profile.isComplete ? () {
+          if (!provider.canGenerate) {
+            UpgradeDialog.show(context, feature: 'AI 문서 생성 (${provider.aiGenerateCount}/${provider.aiGenerateLimit}회 사용)', requiredPlan: 'Basic');
+            return;
+          }
+          provider.incrementAICount();
+          provider.generateAllDocuments();
+        } : null,
         icon: const Icon(Icons.auto_awesome_rounded, size: 20, color: Colors.white),
         label: const Text('Generate All Documents', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         style: ElevatedButton.styleFrom(
@@ -603,7 +611,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: OutlinedButton.icon(
                   icon: Icon(Icons.file_copy_rounded, size: 16, color: cs.primary),
                   label: Text('Copy All to Clipboard', style: TextStyle(color: cs.primary)),
-                  onPressed: () {
+               onPressed: () {
+                    if (!provider.canDownload) {
+                      UpgradeDialog.show(context, feature: '문서 전체 복사', requiredPlan: provider.requiredPlanForDownload);
+                      return;
+                    }
                     final text = DocumentExportService.exportAllAsText(
                       brandName: brand, faqs: provider.faqs, op: provider.operationDesign, qa: provider.qaSheet, scripts: provider.scripts,
                     );
@@ -612,12 +624,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       SnackBar(content: Text('All documents copied (${text.length} chars)')),
                     );
                   },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                ),
               ),
               const SizedBox(height: 16),
             ],
