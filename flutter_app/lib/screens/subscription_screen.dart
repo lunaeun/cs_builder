@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/payment_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -10,8 +12,10 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-  String _currentPlan = 'free';
-  bool _isYearly = false;
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    ㅍbool _isYearly = false;
   bool _isProcessing = false;
 
   final List<_PlanInfo> _plans = [
