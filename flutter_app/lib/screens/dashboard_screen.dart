@@ -393,10 +393,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'description': Icons.article_rounded,
     };
     final colorMap = <String, Color>{
-      'quiz': const Color(0xFF6366F1),
-      'architecture': const Color(0xFF8B5CF6),
-      'grading': const Color(0xFFF59E0B),
-      'description': const Color(0xFF10B981),
+      'quiz': const Color(0xFF1B64DA),
+      'architecture': const Color(0xFF3B82F6),
+      'grading': const Color(0xFF2563EB),
+      (0xFF60A5FA),
     };
     final docColor = colorMap[doc.iconName] ?? cs.primary;
 
@@ -629,10 +629,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildDocCard(GeneratedDocument doc, ColorScheme cs) {
     final isGenerated = doc.status == DocumentStatus.generated;
     final colorMap = <String, Color>{
-      'quiz': const Color(0xFF6366F1),
-      'architecture': const Color(0xFF8B5CF6),
-      'grading': const Color(0xFFF59E0B),
-      'description': const Color(0xFF10B981),
+      'quiz': const Color(0xFF1B64DA),
+      'architecture': const Color(0xFF3B82F6),
+      'grading': const Color(0xFF2563EB),
+      (0xFF60A5FA),
     };
     final docColor = colorMap[doc.iconName] ?? cs.primary;
 
@@ -704,7 +704,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               cs: cs,
             ),
             const SizedBox(height: 8),
-            _buildSettingsTile('Edit Business Profile', Icons.business_center_rounded, const Color(0xFF6366F1),
+            _buildSettingsTile('Edit Business Profile', Icons.business_center_rounded, const Color(0xFF1B64DA),
               () => Navigator.pushReplacementNamed(context, '/onboarding'), cs),
             const SizedBox(height: 8),
             _buildSettingsTile('Regenerate All Docs', Icons.refresh_rounded, const Color(0xFF8B5CF6),
