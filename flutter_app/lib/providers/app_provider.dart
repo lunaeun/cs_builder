@@ -17,7 +17,8 @@ class AppProvider extends ChangeNotifier {
   bool _isGenerating = false;
   bool _profileCompleted = false;
   bool _isDarkMode = false;
-
+  String _currentPlan = 'free';
+  int _aiGenerateCount = 0;
   BusinessProfile get profile => _profile;
   List<FAQItem> get faqs => _faqs;
   QAEvaluationSheet? get qaSheet => _qaSheet;
@@ -29,6 +30,43 @@ class AppProvider extends ChangeNotifier {
   bool get isGenerating => _isGenerating;
   bool get profileCompleted => _profileCompleted;
   bool get isDarkMode => _isDarkMode;
+  String get currentPlan => _currentPlan;
+  int get aiGenerateCount => _aiGenerateCount;
+
+  // 플랜별 기능 체크
+  bool get canDownload => _currentPlan != 'free';
+  bool get canExportCSV => _currentPlan != 'free';
+  bool get canUseQA => _currentPlan == 'pro' || _currentPlan == 'business';
+  bool get canUseIVR => _currentPlan == 'pro' || _currentPlan == 'business';
+  bool get canUseTeam => _currentPlan == 'business';
+  bool get isUnlimitedAI => _currentPlan == 'pro' || _currentPlan == 'business';
+
+  int get aiGenerateLimit {
+    switch (_currentPlan) {
+      case 'basic': return 30;
+      case 'pro': case 'business': return 999999;
+      default: return 3;
+    }
+  }
+
+  bool get canGenerate => _aiGenerateCount < aiGenerateLimit;
+
+  String get requiredPlanForDownload => 'Basic';
+  String get requiredPlanForQA => 'Pro';
+  String get requiredPlanForIVR => 'Pro';
+  String get requiredPlanForTeam => 'Business';
+
+  void updatePlan(String planId) {
+    _currentPlan = planId;
+    notifyListeners();
+    _saveSettings();
+  }
+
+  void incrementAICount() {
+    _aiGenerateCount++;
+    notifyListeners();
+    _saveSettings();
+  }
 
   // Completion progress (0.0 ~ 1.0)
   double get completionProgress {
@@ -172,11 +210,12 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _saveSettings() async {
+Future<void> _saveSettings() async {
     final box = await Hive.openBox('cs_builder');
     await box.put('isDarkMode', _isDarkMode);
+    await box.put('currentPlan', _currentPlan);
+    await box.put('aiGenerateCount', _aiGenerateCount);
   }
-
   Future<void> _saveQARecords() async {
     final box = await Hive.openBox('cs_builder');
     await box.put('qaRecords', jsonEncode(_qaRecords.map((r) => r.toMap()).toList()));
@@ -195,7 +234,8 @@ class AppProvider extends ChangeNotifier {
     }
     _profileCompleted = box.get('profileCompleted', defaultValue: false);
     _isDarkMode = box.get('isDarkMode', defaultValue: false);
-
+    _currentPlan = box.get('currentPlan', defaultValue: 'free');
+    _aiGenerateCount = box.get('aiGenerateCount', defaultValue: 0);
     // Load QA records
     final qaJson = box.get('qaRecords');
     if (qaJson != null) {
