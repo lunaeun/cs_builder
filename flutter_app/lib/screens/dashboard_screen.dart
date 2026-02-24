@@ -396,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'quiz': const Color(0xFF1B64DA),
       'architecture': const Color(0xFF3B82F6),
       'grading': const Color(0xFF2563EB),
-      (0xFF60A5FA),
+      'description': const Color(0xFF60A5FA),
     };
     final docColor = colorMap[doc.iconName] ?? cs.primary;
 
@@ -632,7 +632,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'quiz': const Color(0xFF1B64DA),
       'architecture': const Color(0xFF3B82F6),
       'grading': const Color(0xFF2563EB),
-      (0xFF60A5FA),
+      'description': const Color(0xFF60A5FA),
     };
     final docColor = colorMap[doc.iconName] ?? cs.primary;
 
@@ -707,7 +707,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _buildSettingsTile('Edit Business Profile', Icons.business_center_rounded, const Color(0xFF1B64DA),
               () => Navigator.pushReplacementNamed(context, '/onboarding'), cs),
             const SizedBox(height: 8),
-            _buildSettingsTile('Regenerate All Docs', Icons.refresh_rounded, const Color(0xFF8B5CF6),
+            _buildSettingsTile('Regenerate All Docs', Icons.refresh_rounded, const Color(0xFF3B82F6),
               () => provider.generateAllDocuments(), cs),
             const SizedBox(height: 8),
             _buildSettingsTile('Reset All Data', Icons.delete_forever_rounded, const Color(0xFFEF4444), () {
