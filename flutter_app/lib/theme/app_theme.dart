@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // ===== Light Mode - Fresh Indigo/Violet Palette =====
-  static const Color primary = Color(0xFF6366F1);       // Indigo 500
+  static const Color primary = Color(0xFF1B64DA);       // Indigo 500
   static const Color primaryLight = Color(0xFF818CF8);   // Indigo 400
   static const Color primaryDark = Color(0xFF4338CA);    // Indigo 700
-  static const Color accent = Color(0xFF8B5CF6);         // Violet 500
+  static const Color accent = Color(0xFF4A90E2);         // Violet 500
   static const Color accentLight = Color(0xFFA78BFA);    // Violet 400
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color background = Color(0xFFF5F3FF);     // Very light violet
+  static const Color background = Color(0xFFF7F8FA);     // Very light violet
   static const Color cardBg = Color(0xFFFFFFFF);
   static const Color divider = Color(0xFFE5E7EB);
   static const Color textPrimary = Color(0xFF111827);
@@ -20,9 +20,9 @@ class AppTheme {
   static const Color warningLight = Color(0xFFFEF3C7);
   static const Color error = Color(0xFFEF4444);
   static const Color errorLight = Color(0xFFFEE2E2);
-  static const Color gradientStart = Color(0xFF6366F1);
-  static const Color gradientEnd = Color(0xFF8B5CF6);
-  static const Color gradientAccent = Color(0xFFEC4899); // Pink accent
+  static const Color gradientStart = Color(0xFF1B64DA);
+  static const Color gradientEnd = Color(0xFF4A90E2);
+  static const Color gradientAccent = Color(0xFF4A90E2); // Pink accent
 
   // ===== Dark Mode =====
   static const Color dPrimary = Color(0xFF818CF8);
@@ -164,7 +164,8 @@ class AppTheme {
   );
 
   static LinearGradient get heroGradient => const LinearGradient(
-    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFFEC4899)],
+    colors: [Color(0xFF1B64DA
+), Color(0xFF4A90E2), Color(0xFF4A90E2)],
     begin: Alignment.topLeft, end: Alignment.bottomRight,
     stops: [0.0, 0.5, 1.0],
   );
