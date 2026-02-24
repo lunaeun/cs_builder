@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/payment_service.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -11,44 +12,32 @@ class SubscriptionScreen extends StatefulWidget {
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String _currentPlan = 'free';
   bool _isYearly = false;
+  bool _isProcessing = false;
 
   final List<_PlanInfo> _plans = [
     _PlanInfo(
-      id: 'free',
-      name: 'Free',
-      monthlyPrice: 0,
-      yearlyPrice: 0,
+      id: 'free', name: 'Free', monthlyPrice: 0, yearlyPrice: 0,
       description: '체험용',
       features: ['AI 생성 3회', '기본 템플릿', '미리보기만 가능'],
       limitations: ['다운로드 불가', 'QA 평가 불가', '팀 기능 없음'],
       color: Color(0xFF94A3B8),
     ),
     _PlanInfo(
-      id: 'basic',
-      name: 'Basic',
-      monthlyPrice: 9900,
-      yearlyPrice: 99000,
+      id: 'basic', name: 'Basic', monthlyPrice: 9900, yearlyPrice: 99000,
       description: '1인 사장님',
       features: ['AI 생성 30회/월', '스크립트 다운로드', 'FAQ 다운로드', '이메일 지원'],
       limitations: ['QA 평가 불가', '팀 기능 없음'],
       color: Color(0xFF3B82F6),
     ),
     _PlanInfo(
-      id: 'pro',
-      name: 'Pro',
-      monthlyPrice: 19900,
-      yearlyPrice: 199000,
+      id: 'pro', name: 'Pro', monthlyPrice: 19900, yearlyPrice: 199000,
       description: '성장하는 비즈니스',
       features: ['무제한 AI 생성', 'IVR 시나리오', 'QA 평가 시트', '전화/채팅 지원', '우선 업데이트'],
       limitations: ['팀 기능 없음'],
-      color: Color(0xFF1B64DA),
-      isPopular: true,
+      color: Color(0xFF1B64DA), isPopular: true,
     ),
     _PlanInfo(
-      id: 'business',
-      name: 'Business',
-      monthlyPrice: 39900,
-      yearlyPrice: 399000,
+      id: 'business', name: 'Business', monthlyPrice: 39900, yearlyPrice: 399000,
       description: '팀 운영',
       features: ['Pro 전체 기능', '팀 멤버 관리', '월간 리포트', '전담 매니저', 'API 연동'],
       limitations: [],
@@ -67,14 +56,32 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      body: Stack(
         children: [
-          _buildCurrentPlan(cs),
-          const SizedBox(height: 20),
-          _buildToggle(cs),
-          const SizedBox(height: 16),
-          ..._plans.map((plan) => _buildPlanCard(plan, cs)),
+          ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            children: [
+              _buildCurrentPlan(cs),
+              const SizedBox(height: 20),
+              _buildToggle(cs),
+              const SizedBox(height: 16),
+              ..._plans.map((plan) => _buildPlanCard(plan, cs)),
+            ],
+          ),
+          if (_isProcessing)
+            Container(
+              color: Colors.black.withValues(alpha: 0.3),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: Color(0xFF1B64DA)),
+                    SizedBox(height: 16),
+                    Text('결제 처리 중...', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -229,19 +236,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               if (plan.isPopular)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1B64DA),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+                  decoration: BoxDecoration(color: const Color(0xFF1B64DA), borderRadius: BorderRadius.circular(6)),
                   child: const Text('추천', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
                 ),
               if (isCurrent)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: cs.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+                  decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
                   child: Text('현재', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cs.primary)),
                 ),
             ],
@@ -256,17 +257,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ),
               if (price > 0) ...[
                 const SizedBox(width: 2),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('/월', style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.4))),
-                ),
+                Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('/월', style: TextStyle(fontSize: 13, color: cs.onSurface.withValues(alpha: 0.4)))),
               ],
               if (_isYearly && price > 0) ...[
                 const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text('연 ₩${_formatPrice(price)}', style: TextStyle(fontSize: 11, color: cs.onSurface.withValues(alpha: 0.35))),
-                ),
+                Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('연 ₩${_formatPrice(price)}', style: TextStyle(fontSize: 11, color: cs.onSurface.withValues(alpha: 0.35)))),
               ],
             ],
           ),
@@ -300,7 +295,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     child: const Text('현재 플랜'),
                   )
                 : ElevatedButton(
-                    onPressed: () => _handleSubscribe(plan),
+                    onPressed: _isProcessing ? null : () => _handleSubscribe(plan),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: plan.isPopular ? const Color(0xFF1B64DA) : cs.primary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -317,23 +312,112 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  void _handleSubscribe(_PlanInfo plan) {
+  void _handleSubscribe(_PlanInfo plan) async {
+    final price = _isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+
+    // 무료 플랜은 결제 없이 바로 변경
+    if (price == 0) {
+      setState(() => _currentPlan = plan.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${plan.name} 플랜으로 변경되었습니다'),
+            backgroundColor: const Color(0xFF1B64DA),
+          ),
+        );
+      }
+      return;
+    }
+
+    // 결제 확인 다이얼로그
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('${plan.name} 플랜 구독'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('결제 금액: ₩${_formatPrice(price)}${_isYearly ? "/년" : "/월"}'),
+            const SizedBox(height: 8),
+            Text('토스페이먼츠 결제창이 열립니다.', style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5))),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('취소')),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('결제하기', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1B64DA))),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // 결제 호출
+    setState(() => _isProcessing = true);
+
+    try {
+      final result = await PaymentService.requestPayment(
+        planId: plan.id,
+        planName: '${plan.name} 플랜 (${_isYearly ? "연간" : "월간"})',
+        amount: price,
+        buyerName: 'CS Builder 사용자',
+        buyerEmail: 'user@csbuilder.app',
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        setState(() {
+          _currentPlan = plan.id;
+          _isProcessing = false;
+        });
+        _showResultDialog(
+          success: true,
+          title: '결제 완료!',
+          message: '${plan.name} 플랜이 활성화되었습니다.\n결제 ID: ${result['paymentId']}',
+        );
+      } else {
+        setState(() => _isProcessing = false);
+        _showResultDialog(
+          success: false,
+          title: '결제 실패',
+          message: result['message'] ?? '결제 처리 중 오류가 발생했습니다.',
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+      _showResultDialog(
+        success: false,
+        title: '결제 오류',
+        message: '결제 처리 중 오류가 발생했습니다.\n$e',
+      );
+    }
+  }
+
+  void _showResultDialog({required bool success, required String title, required String message}) {
     showDialog(
       context: context,
       builder: (c) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('${plan.name} 플랜'),
-        content: Text('${plan.name} 플랜으로 변경하시겠습니까?\n\n결제 기능은 준비 중입니다.'),
+        title: Row(
+          children: [
+            Icon(
+              success ? Icons.check_circle_rounded : Icons.error_rounded,
+              color: success ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+            ),
+            const SizedBox(width: 8),
+            Text(title),
+          ],
+        ),
+        content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('취소')),
           TextButton(
-            onPressed: () {
-              setState(() => _currentPlan = plan.id);
-              Navigator.pop(c);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${plan.name} 플랜으로 변경되었습니다')),
-              );
-            },
+            onPressed: () => Navigator.pop(c),
             child: const Text('확인', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
