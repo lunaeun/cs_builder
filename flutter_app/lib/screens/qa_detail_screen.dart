@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/generated_documents.dart';
 import '../services/export_service.dart';
+import '../widgets/upgrade_dialog.dart';
+
 
 class QADetailScreen extends StatefulWidget {
   const QADetailScreen({super.key});
@@ -41,7 +43,11 @@ class _QADetailScreenState extends State<QADetailScreen> with SingleTickerProvid
             actions: [
               PopupMenuButton<String>(
                 icon: Icon(Icons.more_vert_rounded, size: 20, color: cs.onSurface.withValues(alpha: 0.6)),
-                onSelected: (val) {
+                              onSelected: (val) {
+                  if (!provider.canUseQA) {
+                    UpgradeDialog.show(context, feature: 'QA 평가', requiredPlan: provider.requiredPlanForQA);
+                    return;
+                  }
                   if (val == 'copy_sheet') {
                     final text = DocumentExportService.exportQASheetAsText(qa);
                     Clipboard.setData(ClipboardData(text: text));
@@ -53,6 +59,7 @@ class _QADetailScreenState extends State<QADetailScreen> with SingleTickerProvid
                     _showSnack('평가 기록이 CSV로 복사되었습니다');
                   }
                 },
+
                 itemBuilder: (_) => [
                   const PopupMenuItem(value: 'copy_sheet', child: Row(children: [Icon(Icons.content_copy, size: 16), SizedBox(width: 8), Text('평가 시트 복사')])),
                   if (provider.qaRecords.isNotEmpty)
