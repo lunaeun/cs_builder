@@ -270,7 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (p.useChannelTalk) channels.add(_ChInfo('ChannelTalk', Icons.chat_rounded, const Color(0xFF3B82F6)));
     if (p.useEmailChannel) channels.add(_ChInfo('Email', Icons.email_rounded, const Color(0xFF2563EB)));
     if (p.useSnsChannel) channels.add(_ChInfo('SNS', Icons.forum_rounded, const Color(0xFF2563EB)));
-    if (p.useBoardChannel) channels.add(_ChInfo('Board', Icons.dashboard_rounded, const Color(0xFF60A5FA)));
+    if (p.useBoardChannel) channels.add(_ChInfo('Board', Icons.dashboard_rounded,'description': const Color(0xFF60A5FA),
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -396,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'quiz': const Color(0xFF1B64DA),
       'architecture': const Color(0xFF3B82F6),
       'grading': const Color(0xFF2563EB),
-'description': const Color(0xFF60A5FA),
+      'description': const Color(0xFF60A5FA),
     };
     final docColor = colorMap[doc.iconName] ?? cs.primary;
 
