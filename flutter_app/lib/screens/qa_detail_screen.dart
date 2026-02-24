@@ -80,7 +80,14 @@ class _QADetailScreenState extends State<QADetailScreen> with SingleTickerProvid
             ],
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showNewEvaluationDialog(provider, qa, cs),
+            onPressed: () {
+              if (!provider.canUseQA) {
+                UpgradeDialog.show(context, feature: 'QA 평가', requiredPlan: provider.requiredPlanForQA);
+                return;
+              }
+              _showNewEvaluationDialog(provider, qa, cs);
+            },
+
             icon: const Icon(Icons.add_rounded, size: 20),
             label: const Text('새 평가'),
           ),
