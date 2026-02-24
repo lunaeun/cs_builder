@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/generated_documents.dart';
 import '../services/export_service.dart';
-import '../theme/app_theme.dart';
+import 'subscription_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -703,6 +703,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               trailing: Switch(value: provider.isDarkMode, onChanged: (_) => provider.toggleDarkMode()),
               cs: cs,
             ),
+            const SizedBox(height: 8),
+                        _buildSettingsTile('구독 관리', Icons.workspace_premium_rounded, const Color(0xFF1B64DA),
+              () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionScreen())), cs),
             const SizedBox(height: 8),
             _buildSettingsTile('Edit Business Profile', Icons.business_center_rounded, const Color(0xFF1B64DA),
               () => Navigator.pushReplacementNamed(context, '/onboarding'), cs),
